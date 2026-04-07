@@ -1,1 +1,5 @@
 /Users/osamaalnajar/Documents/Projects/redis-clone/src/main/java/com/osama/redisclone/Main.java
+/Users/osamaalnajar/Documents/Projects/redis-clone/src/main/java/com/osama/redisclone/command/CommandProcessor.java
+/Users/osamaalnajar/Documents/Projects/redis-clone/src/main/java/com/osama/redisclone/command/ParsedCommand.java
+/Users/osamaalnajar/Documents/Projects/redis-clone/src/main/java/com/osama/redisclone/model/Entry.java
+/Users/osamaalnajar/Documents/Projects/redis-clone/src/main/java/com/osama/redisclone/store/InMemoryStore.java
