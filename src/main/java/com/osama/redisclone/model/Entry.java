@@ -21,7 +21,11 @@ public class Entry {
         return expiresAt;
     }
 
+    public boolean isExpired(long currentTimeMillis) {
+        return expiresAt != null && currentTimeMillis > expiresAt;
+    }
+
     public boolean isExpired() {
-        return expiresAt != null && System.currentTimeMillis() > expiresAt;
+        return isExpired(System.currentTimeMillis());
     }
 }
