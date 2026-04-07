@@ -55,14 +55,28 @@ public class CommandProcessor {
     }
 
     private ParsedCommand parseSetCommand(String remainder, String commandName) {
-        String[] setParts = remainder.split("\\s+", 2);
+        String[] parts = remainder.split("\\s+");
 
-        if (setParts.length < 2) {
-            return new ParsedCommand(commandName, List.of(setParts));
+        if (parts.length < 2) {
+            return new ParsedCommand(commandName, List.of(parts));
         }
 
-        String key = setParts[0];
-        String value = setParts[1];
+        if (parts.length >= 4 && parts[parts.length - 2].equalsIgnoreCase("EX")) {
+            String key = parts[0];
+            String ttl = parts[parts.length - 1];
+            String value = String.join(" ", java.util.Arrays.asList(parts).subList(1, parts.length - 2));
+
+            List<String> arguments = new ArrayList<>();
+            arguments.add(key);
+            arguments.add(value);
+            arguments.add("EX");
+            arguments.add(ttl);
+
+            return new ParsedCommand(commandName, arguments);
+        }
+
+        String key = parts[0];
+        String value = String.join(" ", java.util.Arrays.asList(parts).subList(1, parts.length));
 
         List<String> arguments = new ArrayList<>();
         arguments.add(key);
@@ -72,15 +86,32 @@ public class CommandProcessor {
     }
 
     private String handleSet(List<String> args) {
-        if (args.size() != 2) {
-            return "ERROR: SET requires exactly 2 arguments: SET key value";
+        if (args.size() == 2) {
+            String key = args.get(0);
+            String value = args.get(1);
+            store.set(key, value);
+            return "OK";
         }
 
-        String key = args.get(0);
-        String value = args.get(1);
+        if (args.size() == 4 && args.get(2).equalsIgnoreCase("EX")) {
+            String key = args.get(0);
+            String value = args.get(1);
 
-        store.set(key, value);
-        return "OK";
+            try {
+                long ttlSeconds = Long.parseLong(args.get(3));
+
+                if (ttlSeconds <= 0) {
+                    return "ERROR: TTL must be greater than 0";
+                }
+
+                store.set(key, value, ttlSeconds);
+                return "OK";
+            } catch (NumberFormatException e) {
+                return "ERROR: TTL must be a valid number";
+            }
+        }
+
+        return "ERROR: SET syntax is SET key value [EX seconds]";
     }
 
     private String handleGet(List<String> args) {
