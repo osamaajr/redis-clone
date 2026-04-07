@@ -2,7 +2,7 @@ package com.osama.redisclone.command;
 
 import com.osama.redisclone.store.InMemoryStore;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 public class CommandProcessor {
@@ -37,15 +37,42 @@ public class CommandProcessor {
             return null;
         }
 
-        String[] parts = trimmedInput.split("\\s+");
-        String commandName = parts[0].toUpperCase();
-        List<String> arguments = Arrays.asList(parts).subList(1, parts.length);
+        String[] firstSplit = trimmedInput.split("\\s+", 2);
+        String commandName = firstSplit[0].toUpperCase();
+
+        if (firstSplit.length == 1) {
+            return new ParsedCommand(commandName, List.of());
+        }
+
+        String remainder = firstSplit[1];
+
+        if (commandName.equals("SET")) {
+            return parseSetCommand(remainder, commandName);
+        }
+
+        List<String> arguments = List.of(remainder.split("\\s+"));
+        return new ParsedCommand(commandName, arguments);
+    }
+
+    private ParsedCommand parseSetCommand(String remainder, String commandName) {
+        String[] setParts = remainder.split("\\s+", 2);
+
+        if (setParts.length < 2) {
+            return new ParsedCommand(commandName, List.of(setParts));
+        }
+
+        String key = setParts[0];
+        String value = setParts[1];
+
+        List<String> arguments = new ArrayList<>();
+        arguments.add(key);
+        arguments.add(value);
 
         return new ParsedCommand(commandName, arguments);
     }
 
     private String handleSet(List<String> args) {
-        if (args.size() < 2) {
+        if (args.size() != 2) {
             return "ERROR: SET requires exactly 2 arguments: SET key value";
         }
 
