@@ -91,4 +91,48 @@ class CommandProcessorTest {
 
         assertEquals("ERROR: Invalid command", response);
     }
+
+    @Test
+    void setWithExShouldStoreValueBeforeExpiry() {
+        InMemoryStore store = new InMemoryStore();
+        CommandProcessor processor = new CommandProcessor(store);
+
+        String response = processor.process("SET token abc123 EX 5");
+
+        assertEquals("OK", response);
+        assertEquals("abc123", store.get("token"));
+    }
+
+    @Test
+    void setWithExShouldExpireAfterTime() throws InterruptedException {
+        InMemoryStore store = new InMemoryStore();
+        CommandProcessor processor = new CommandProcessor(store);
+
+        processor.process("SET token abc123 EX 1");
+        Thread.sleep(1100);
+
+        String response = processor.process("GET token");
+
+        assertEquals("(nil)", response);
+    }
+
+    @Test
+    void setWithInvalidTtlShouldReturnError() {
+        InMemoryStore store = new InMemoryStore();
+        CommandProcessor processor = new CommandProcessor(store);
+
+        String response = processor.process("SET token abc123 EX nope");
+
+        assertEquals("ERROR: TTL must be a valid number", response);
+    }
+
+    @Test
+    void setWithNonPositiveTtlShouldReturnError() {
+        InMemoryStore store = new InMemoryStore();
+        CommandProcessor processor = new CommandProcessor(store);
+
+        String response = processor.process("SET token abc123 EX 0");
+
+        assertEquals("ERROR: TTL must be greater than 0", response);
+    }
 }

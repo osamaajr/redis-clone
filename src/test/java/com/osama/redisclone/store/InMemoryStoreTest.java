@@ -41,4 +41,23 @@ class InMemoryStoreTest {
 
         assertFalse(deleted);
     }
+
+    @Test
+    void getShouldReturnNullAfterTtlExpires() throws InterruptedException {
+        InMemoryStore store = new InMemoryStore();
+
+        store.set("temp", "value", 1);
+        Thread.sleep(1100);
+
+        assertNull(store.get("temp"));
+    }
+
+    @Test
+    void getShouldReturnValueBeforeTtlExpires() {
+        InMemoryStore store = new InMemoryStore();
+
+        store.set("temp", "value", 5);
+
+        assertEquals("value", store.get("temp"));
+    }
 }

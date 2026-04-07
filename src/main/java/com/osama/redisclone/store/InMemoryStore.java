@@ -16,9 +16,24 @@ public class InMemoryStore {
         data.put(key, new Entry(value));
     }
 
+    public void set(String key, String value, long ttlSeconds) {
+        long expiresAt = System.currentTimeMillis() + (ttlSeconds * 1000);
+        data.put(key, new Entry(value, expiresAt));
+    }
+
     public String get(String key) {
         Entry entry = data.get(key);
-        return entry != null ? entry.getValue() : null;
+
+        if (entry == null) {
+            return null;
+        }
+
+        if (entry.isExpired()) {
+            data.remove(key);
+            return null;
+        }
+
+        return entry.getValue();
     }
 
     public boolean delete(String key) {
