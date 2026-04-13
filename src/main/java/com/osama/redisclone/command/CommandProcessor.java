@@ -1,15 +1,23 @@
 package com.osama.redisclone.command;
 
+import com.osama.redisclone.persistence.PersistenceManager;
 import com.osama.redisclone.store.InMemoryStore;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CommandProcessor {
     private final InMemoryStore store;
+    private final PersistenceManager persistenceManager;
+
+    public CommandProcessor(InMemoryStore store, PersistenceManager persistenceManager) {
+        this.store = store;
+        this.persistenceManager = persistenceManager;
+    }
 
     public CommandProcessor(InMemoryStore store) {
-        this.store = store;
+        this(store, new PersistenceManager("redis-clone.aof"));
     }
 
     public String process(String input) {
@@ -26,6 +34,24 @@ public class CommandProcessor {
             case "SET" -> handleSet(args);
             case "GET" -> handleGet(args);
             case "DEL" -> handleDel(args);
+            default -> "ERROR: Unsupported command";
+        };
+    }
+
+    public String processWithoutPersistence(String input) {
+        ParsedCommand parsedCommand = parse(input);
+
+        if (parsedCommand == null) {
+            return "ERROR: Invalid command";
+        }
+
+        String commandName = parsedCommand.getCommandName();
+        List<String> args = parsedCommand.getArguments();
+
+        return switch (commandName) {
+            case "SET" -> handleSetNoPersist(args);
+            case "GET" -> handleGet(args);
+            case "DEL" -> handleDelNoPersist(args);
             default -> "ERROR: Unsupported command";
         };
     }
@@ -64,7 +90,7 @@ public class CommandProcessor {
         if (parts.length >= 4 && parts[parts.length - 2].equalsIgnoreCase("EX")) {
             String key = parts[0];
             String ttl = parts[parts.length - 1];
-            String value = String.join(" ", java.util.Arrays.asList(parts).subList(1, parts.length - 2));
+            String value = String.join(" ", Arrays.asList(parts).subList(1, parts.length - 2));
 
             List<String> arguments = new ArrayList<>();
             arguments.add(key);
@@ -76,7 +102,7 @@ public class CommandProcessor {
         }
 
         String key = parts[0];
-        String value = String.join(" ", java.util.Arrays.asList(parts).subList(1, parts.length));
+        String value = String.join(" ", Arrays.asList(parts).subList(1, parts.length));
 
         List<String> arguments = new ArrayList<>();
         arguments.add(key);
@@ -89,7 +115,9 @@ public class CommandProcessor {
         if (args.size() == 2) {
             String key = args.get(0);
             String value = args.get(1);
+
             store.set(key, value);
+            persistenceManager.appendCommand("SET " + key + " " + value);
             return "OK";
         }
 
@@ -105,6 +133,7 @@ public class CommandProcessor {
                 }
 
                 store.set(key, value, ttlSeconds);
+                persistenceManager.appendCommand("SET " + key + " " + value + " EX " + ttlSeconds);
                 return "OK";
             } catch (NumberFormatException e) {
                 return "ERROR: TTL must be a valid number";
@@ -133,6 +162,39 @@ public class CommandProcessor {
         String key = args.get(0);
         boolean deleted = store.delete(key);
 
-        return deleted ? "1" : "0";
+        if (deleted) {
+            persistenceManager.appendCommand("DEL " + key);
+            return "1";
+        }
+
+        return "0";
+    }
+
+    private String handleSetNoPersist(List<String> args) {
+        if (args.size() == 2) {
+            store.set(args.get(0), args.get(1));
+            return "OK";
+        }
+
+        if (args.size() == 4 && args.get(2).equalsIgnoreCase("EX")) {
+            try {
+                long ttl = Long.parseLong(args.get(3));
+                store.set(args.get(0), args.get(1), ttl);
+                return "OK";
+            } catch (NumberFormatException e) {
+                return "ERROR";
+            }
+        }
+
+        return "ERROR";
+    }
+
+    private String handleDelNoPersist(List<String> args) {
+        if (args.size() != 1) {
+            return "ERROR";
+        }
+
+        store.delete(args.get(0));
+        return "OK";
     }
 }

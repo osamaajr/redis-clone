@@ -1,6 +1,6 @@
+com/osama/redisclone/model/Entry.class
 com/osama/redisclone/command/ParsedCommand.class
 com/osama/redisclone/command/CommandProcessor.class
 com/osama/redisclone/store/InMemoryStore.class
-com/osama/redisclone/model/Entry.class
 com/osama/redisclone/Main.class
 com/osama/redisclone/persistence/PersistenceManager.class
