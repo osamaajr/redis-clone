@@ -10,3 +10,7 @@ SET name osama
 SET token abc123
 SET name osama
 DEL name
+SET test concurrent
+SET concurrent test
+SET client1 data1
+SET client2 data2
