@@ -1,0 +1,12 @@
+SET name osama
+SET token abc123 EX 5
+DEL name
+SET bio Computer Science student at Liverpool
+SET token abc123 EX 1
+SET name osama
+SET token abc123 EX 5
+DEL name
+SET name osama
+SET token abc123
+SET name osama
+DEL name
