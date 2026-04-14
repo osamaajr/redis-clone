@@ -13,7 +13,7 @@
 
 ## Overview
 
-This document describes the design and architecture of a Redis-inspired in-memory key-value store built in Java. The system prioritizes **concurrency**, **simplicity**, and **reliability** for a university-level project.
+This document describes the design and architecture of a Redis-inspired in-memory key-value store built in Java. The system prioritises **concurrency**, **simplicity**, and **reliability**.
 
 ### Project Goals
 1. ✅ Support multiple concurrent clients without blocking
@@ -32,7 +32,7 @@ This document describes the design and architecture of a Redis-inspired in-memor
 ┌─────────────────────────────────────────────────────────────┐
 │                    Application Layer                        │
 │                    (Main.java)                              │
-│  - Initialization                                           │
+│  - Initialisation                                           │
 │  - Startup sequence                                         │
 │  - Component orchestration                                  │
 └──────────────────┬──────────────────────────────────────────┘
