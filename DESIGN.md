@@ -261,7 +261,7 @@ SET username osama
 GET username
 DEL username
 
-RESP format (overkill for university project):
+RESP format (beyond scope of this project):
 *3\r\n$3\r\nSET\r\n$8\r\nusername\r\n$6\r\nosama\r\n
 ```
 
@@ -405,7 +405,7 @@ Result: Token now valid for another FULL hour!
 
 | Aspect | Chosen | Alternative | Reason |
 |--------|--------|-------------|--------|
-| Protocol | Text | RESP | Simpler for university project |
+| Protocol | Text | RESP | Simpler implementation |
 | Persistence | AOF only | AOF + Snapshots | Complexity vs benefit |
 | Expiration | Lazy | Eager | No background threads |
 | Thread pool | Unbounded | Bounded | Simple, sufficient for scope |
